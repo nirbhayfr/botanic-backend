@@ -1,0 +1,30 @@
+{
+	"name": "dialforastro",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"type": "module",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"dev": "nodemon index.js",
+		"start": "node index.js",
+		"seed:products": "node scripts/seedProducts.js"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"bcrypt": "^6.0.0",
+		"cors": "^2.8.6",
+		"crypto": "^1.0.1",
+		"dotenv": "^17.4.2",
+		"express": "^5.2.1",
+		"jsonwebtoken": "^9.0.3",
+		"mongo-sanitize": "^1.1.0",
+		"mongodb": "^7.2.0",
+		"mongoose": "^9.5.0",
+		"nodemailer": "^8.0.5",
+		"razorpay": "^2.9.6",
+		"zod": "^4.3.6"
+	}
+}
