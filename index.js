@@ -13,6 +13,7 @@ import orderRouter from "./routes/Order.js";
 import reviewRouter from "./routes/Review.js";
 import paymentRouter from "./routes/Razorpay.js";
 import consultationRouter from "./routes/Consultation.js";
+import automationRouter from "./routes/Automation.js";
 
 connectDB();
 
@@ -36,6 +37,7 @@ app.use("/api/v1/order", orderRouter);
 app.use("/api/v1/review", reviewRouter);
 app.use("/api/v1/payment", paymentRouter);
 app.use("/api/v1/consultation", consultationRouter);
+app.use("/api/v1/automation", automationRouter);
 
 app.use((req, res) => {
 	res.status(404).json({ error: "Route not found" });

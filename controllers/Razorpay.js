@@ -2,6 +2,7 @@ import razorpay from "../config/razorpay.js";
 import crypto from "crypto";
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
+import { triggerOrderNotificationAsync } from "../services/orderNotificationService.js";
 
 // Create Order
 export const createOrder = async (req, res) => {
@@ -74,6 +75,8 @@ export const verifyPayment = async (req, res) => {
 		}
 
 		await order.save();
+
+		triggerOrderNotificationAsync("order_confirmed", order);
 
 		return res.json({
 			success: true,

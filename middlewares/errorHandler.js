@@ -3,9 +3,11 @@ const tryCatch = (handler) => {
 		try {
 			await handler(req, res, next);
 		} catch (error) {
-			res.status(500).json({
-				message: error.message,
-			});
+			if (!res.headersSent) {
+				res.status(500).json({
+					message: error.message,
+				});
+			}
 		}
 	};
 };

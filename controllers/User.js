@@ -44,7 +44,6 @@ export const registerUser = tryCatch(async (req, res) => {
 		email,
 		password,
 		confirmPassword,
-		role,
 	} = validation.data;
 
 	const checkPassword = confirmPassword === password;
@@ -70,7 +69,6 @@ export const registerUser = tryCatch(async (req, res) => {
 		lastName,
 		phone,
 		password: hashedPassword,
-		role,
 	});
 
 	res.status(201).json({

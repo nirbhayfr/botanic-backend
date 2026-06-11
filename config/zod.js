@@ -1,5 +1,21 @@
 import z from "zod";
 
+export const normalizeIndianPhone = (value) => {
+	const digits = String(value || "").replace(/\D/g, "");
+	if (digits.length === 10) return `91${digits}`;
+	if (digits.length === 12 && digits.startsWith("91")) return digits;
+	if (digits.length === 13 && digits.startsWith("091")) return digits.slice(1);
+	return digits;
+};
+
+export const indianPhoneSchema = z
+	.string()
+	.transform(normalizeIndianPhone)
+	.refine(
+		(value) => /^91[6-9]\d{9}$/.test(value),
+		"Phone must be a valid 10-digit Indian mobile number",
+	);
+
 export const addressSchema = z.object({
 	addressLine1: z.string().optional(),
 	addressLine2: z.string().optional(),
@@ -32,7 +48,6 @@ export const registerSchema = z.object({
 	confirmPassword: z
 		.string()
 		.min(8, "Confirm Password must have a minimum of 8 characters"),
-	role: z.string().optional(),
 	shippingAddress: addressSchema.optional(),
 });
 
@@ -139,6 +154,12 @@ export const createOrderSchema = z.object({
 
 		country: z.string().min(1, "Country is required"),
 	}),
+
+	contactPhone: indianPhoneSchema,
+
+	contactEmail: z.string().email("Invalid contact email").optional(),
+
+	customerName: z.string().min(1, "Customer name is required").optional(),
 
 	paymentMethod: z.enum(["cod", "razorpay", "stripe"]).optional(),
 

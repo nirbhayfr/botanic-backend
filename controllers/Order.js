@@ -8,6 +8,7 @@ import tryCatch from "../middlewares/errorHandler.js";
 
 import { createOrderSchema } from "../config/zod.js";
 import razorpay from "../config/razorpay.js";
+import { triggerOrderNotificationAsync } from "../services/orderNotificationService.js";
 
 export const createRazorpayCheckout = tryCatch(async (req, res) => {
 	const userId = req.userId;
@@ -22,7 +23,8 @@ export const createRazorpayCheckout = tryCatch(async (req, res) => {
 		});
 	}
 
-	const { items, shippingAddress } = validation.data;
+	const { items, shippingAddress, contactPhone, contactEmail, customerName } =
+		validation.data;
 
 	const orderItems = [];
 
@@ -78,6 +80,12 @@ export const createRazorpayCheckout = tryCatch(async (req, res) => {
 
 		shippingAddress,
 
+		contactPhone,
+
+		contactEmail,
+
+		customerName,
+
 		paymentMethod: "razorpay",
 
 		subTotal,
@@ -90,6 +98,8 @@ export const createRazorpayCheckout = tryCatch(async (req, res) => {
 
 		razorpayOrderId: razorpayOrder.id,
 	});
+
+	triggerOrderNotificationAsync("order_placed", order);
 
 	res.status(201).json({
 		order,
@@ -116,7 +126,14 @@ export const createOrder = tryCatch(async (req, res) => {
 		});
 	}
 
-	const { items, shippingAddress, paymentMethod } = validation.data;
+	const {
+		items,
+		shippingAddress,
+		paymentMethod,
+		contactPhone,
+		contactEmail,
+		customerName,
+	} = validation.data;
 
 	const orderItems = [];
 
@@ -168,6 +185,12 @@ export const createOrder = tryCatch(async (req, res) => {
 
 		shippingAddress,
 
+		contactPhone,
+
+		contactEmail,
+
+		customerName,
+
 		paymentMethod,
 
 		subTotal,
@@ -176,6 +199,8 @@ export const createOrder = tryCatch(async (req, res) => {
 
 		totalAmount,
 	});
+
+	triggerOrderNotificationAsync("order_placed", order);
 
 	res.status(201).json({
 		message: "Order placed successfully",
@@ -249,11 +274,27 @@ export const updateOrderStatus = tryCatch(async (req, res) => {
 
 	order.orderStatus = orderStatus;
 
+	if (orderStatus === "shipped" && !order.shippedAt) {
+		order.shippedAt = new Date();
+	}
+
 	if (orderStatus === "delivered") {
 		order.deliveredAt = new Date();
 	}
 
 	await order.save();
+
+	if (orderStatus === "shipped") {
+		triggerOrderNotificationAsync("order_shipped", order);
+	}
+
+	if (orderStatus === "delivered") {
+		triggerOrderNotificationAsync("order_delivered", order);
+	}
+
+	if (orderStatus === "cancelled") {
+		triggerOrderNotificationAsync("order_cancelled", order);
+	}
 
 	res.status(200).json({
 		message: "Order status updated successfully",
@@ -297,6 +338,8 @@ export const cancelOrder = tryCatch(async (req, res) => {
 
 	await order.save();
 
+	triggerOrderNotificationAsync("order_cancelled", order);
+
 	res.status(200).json({
 		message: "Order cancelled successfully",
 		data: order,
@@ -320,6 +363,8 @@ export const payOrder = tryCatch(async (req, res) => {
 	order.orderStatus = "confirmed";
 
 	await order.save();
+
+	triggerOrderNotificationAsync("order_confirmed", order);
 
 	res.status(200).json({
 		message: "Order paid successfully",

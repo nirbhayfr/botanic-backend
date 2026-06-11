@@ -42,6 +42,39 @@ const shippingAddressSchema = new mongoose.Schema(
 	{ _id: false },
 );
 
+const notificationSchema = new mongoose.Schema(
+	{
+		channel: {
+			type: String,
+			enum: ["whatsapp"],
+			default: "whatsapp",
+		},
+		event: {
+			type: String,
+			enum: [
+				"order_placed",
+				"order_confirmed",
+				"order_shipped",
+				"order_delivered",
+				"order_cancelled",
+			],
+			required: true,
+		},
+		status: {
+			type: String,
+			enum: ["sent", "failed", "skipped"],
+			required: true,
+		},
+		messageId: String,
+		error: String,
+		sentAt: {
+			type: Date,
+			default: Date.now,
+		},
+	},
+	{ _id: true },
+);
+
 const orderSchema = new mongoose.Schema(
 	{
 		user: {
@@ -53,6 +86,17 @@ const orderSchema = new mongoose.Schema(
 		items: [orderItemSchema],
 
 		shippingAddress: shippingAddressSchema,
+
+		contactPhone: {
+			type: String,
+			required() {
+				return this.isNew;
+			},
+		},
+
+		contactEmail: String,
+
+		customerName: String,
 
 		paymentMethod: {
 			type: String,
@@ -107,7 +151,11 @@ const orderSchema = new mongoose.Schema(
 
 		paidAt: Date,
 
+		shippedAt: Date,
+
 		deliveredAt: Date,
+
+		notifications: [notificationSchema],
 	},
 	{ timestamps: true },
 );
