@@ -24,7 +24,7 @@ app.use(
 		origin: [
 			"http://localhost:3000",
 			"http://localhost:5173",
-			"https://dropsdemo.vercel.app",
+			"https://be-botanic.vercel.app",
 		],
 		credentials: true,
 	}),
