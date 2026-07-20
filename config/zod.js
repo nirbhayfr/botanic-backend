@@ -101,6 +101,7 @@ export const productSchema = z.object({
 				name: z.string().optional(),
 				amount: z.string().optional(),
 				benefit: z.string().optional(),
+				image: z.string().optional(),
 			}),
 		)
 		.optional(),
@@ -108,6 +109,24 @@ export const productSchema = z.object({
 	suitableFor: z.string().optional(),
 	certifications: z.array(z.string()).optional(),
 	relatedIds: z.array(z.string()).optional(),
+	pricingTiers: z.array(z.object({
+		bottles: z.number().min(1), duration: z.string(), price: z.number().min(0),
+		originalPrice: z.number().min(0).optional(), badge: z.string().optional(),
+	})).optional(),
+	keyBenefits: z.array(z.object({ title: z.string(), description: z.string().optional() })).optional(),
+	productDetails: z.array(z.string()).optional(),
+	usageLevels: z.array(z.object({ label: z.string(), tablets: z.number().min(1), frequency: z.string() })).optional(),
+	testimonials: z.array(z.object({ name: z.string(), role: z.string().optional(), quote: z.string(), image: z.string().optional() })).optional(),
+	faqs: z.array(z.object({ question: z.string(), answer: z.string() })).optional(),
+	claims: z.array(z.string()).optional(),
+	aboutParagraphs: z.array(z.string()).optional(),
+	benefitsIntro: z.string().optional(),
+	ingredientsIntro: z.string().optional(),
+	howItWorks: z.string().optional(),
+	testimonialsIntro: z.string().optional(),
+	commitmentParagraph: z.string().optional(),
+	prepaidOffer: z.string().optional(),
+	safetyNotice: z.string().optional(),
 
 	isFeatured: z.boolean().optional(),
 

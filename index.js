@@ -14,6 +14,7 @@ import reviewRouter from "./routes/Review.js";
 import paymentRouter from "./routes/Razorpay.js";
 import consultationRouter from "./routes/Consultation.js";
 import automationRouter from "./routes/Automation.js";
+import heroSlideRouter from "./routes/HeroSlide.js";
 
 connectDB();
 
@@ -39,6 +40,7 @@ app.use("/api/v1/review", reviewRouter);
 app.use("/api/v1/payment", paymentRouter);
 app.use("/api/v1/consultation", consultationRouter);
 app.use("/api/v1/automation", automationRouter);
+app.use("/api/v1/hero-slides", heroSlideRouter);
 
 app.use((req, res) => {
 	res.status(404).json({ error: "Route not found" });

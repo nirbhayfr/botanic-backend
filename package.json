@@ -9,6 +9,7 @@
 		"dev": "nodemon index.js",
 		"start": "node index.js",
 		"seed:products": "node scripts/seedProducts.js"
+		,"seed:hero": "node scripts/seedHeroSlides.js"
 	},
 	"keywords": [],
 	"author": "",

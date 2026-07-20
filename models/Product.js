@@ -15,7 +15,39 @@ const ingredientSchema = new mongoose.Schema(
 		name: String,
 		amount: String,
 		benefit: String,
+		image: String,
 	},
+	{ _id: false },
+);
+
+const keyBenefitSchema = new mongoose.Schema(
+	{ title: String, description: String },
+	{ _id: false },
+);
+
+const pricingTierSchema = new mongoose.Schema(
+	{
+		bottles: Number,
+		duration: String,
+		price: Number,
+		originalPrice: Number,
+		badge: String,
+	},
+	{ _id: false },
+);
+
+const usageLevelSchema = new mongoose.Schema(
+	{ label: String, tablets: Number, frequency: String },
+	{ _id: false },
+);
+
+const testimonialSchema = new mongoose.Schema(
+	{ name: String, role: String, quote: String, image: String },
+	{ _id: false },
+);
+
+const faqSchema = new mongoose.Schema(
+	{ question: String, answer: String },
 	{ _id: false },
 );
 
@@ -93,6 +125,21 @@ const productSchema = new mongoose.Schema(
 		suitableFor: String,
 		certifications: [String],
 		relatedIds: [String],
+		pricingTiers: [pricingTierSchema],
+		keyBenefits: [keyBenefitSchema],
+		productDetails: [String],
+		usageLevels: [usageLevelSchema],
+		testimonials: [testimonialSchema],
+		faqs: [faqSchema],
+		claims: [String],
+		aboutParagraphs: [String],
+		benefitsIntro: String,
+		ingredientsIntro: String,
+		howItWorks: String,
+		testimonialsIntro: String,
+		commitmentParagraph: String,
+		prepaidOffer: String,
+		safetyNotice: String,
 
 		isFeatured: {
 			type: Boolean,

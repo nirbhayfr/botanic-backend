@@ -64,6 +64,21 @@ export const createProduct = tryCatch(async (req, res) => {
 		relatedIds,
 		isFeatured,
 		status,
+		pricingTiers,
+		keyBenefits,
+		productDetails,
+		usageLevels,
+		testimonials,
+		faqs,
+		claims,
+		aboutParagraphs,
+		benefitsIntro,
+		ingredientsIntro,
+		howItWorks,
+		testimonialsIntro,
+		commitmentParagraph,
+		prepaidOffer,
+		safetyNotice,
 	} = validation.data;
 
 	const duplicateChecks = [{ slug }];
@@ -105,6 +120,21 @@ export const createProduct = tryCatch(async (req, res) => {
 		relatedIds,
 		isFeatured,
 		status,
+		pricingTiers,
+		keyBenefits,
+		productDetails,
+		usageLevels,
+		testimonials,
+		faqs,
+		claims,
+		aboutParagraphs,
+		benefitsIntro,
+		ingredientsIntro,
+		howItWorks,
+		testimonialsIntro,
+		commitmentParagraph,
+		prepaidOffer,
+		safetyNotice,
 	}));
 
 	res.status(201).json({
