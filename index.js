@@ -26,7 +26,8 @@ app.use(
 			"http://localhost:3000",
 			"http://localhost:5173",
 			"https://be-botanic.vercel.app",
-			"https://www.bebotanic.com"
+			"https://www.bebotanic.com",
+			"https://drops-nk7ruc7h0-nirbhays-projects-41ffadb8.vercel.app",
 		],
 		credentials: true,
 	}),
