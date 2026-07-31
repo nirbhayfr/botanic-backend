@@ -10,47 +10,6 @@ const productImageSchema = new mongoose.Schema(
 	{ _id: false },
 );
 
-const ingredientSchema = new mongoose.Schema(
-	{
-		name: String,
-		amount: String,
-		benefit: String,
-		image: String,
-	},
-	{ _id: false },
-);
-
-const keyBenefitSchema = new mongoose.Schema(
-	{ title: String, description: String },
-	{ _id: false },
-);
-
-const pricingTierSchema = new mongoose.Schema(
-	{
-		bottles: Number,
-		duration: String,
-		price: Number,
-		originalPrice: Number,
-		badge: String,
-	},
-	{ _id: false },
-);
-
-const usageLevelSchema = new mongoose.Schema(
-	{ label: String, tablets: Number, frequency: String },
-	{ _id: false },
-);
-
-const testimonialSchema = new mongoose.Schema(
-	{ name: String, role: String, quote: String, image: String },
-	{ _id: false },
-);
-
-const faqSchema = new mongoose.Schema(
-	{ question: String, answer: String },
-	{ _id: false },
-);
-
 const productSchema = new mongoose.Schema(
 	{
 		title: {
@@ -71,19 +30,15 @@ const productSchema = new mongoose.Schema(
 			type: String,
 		},
 
-		longDescription: {
-			type: String,
-		},
-
 		price: {
 			type: Number,
 			required: [true, "Price is required"],
 			min: [0, "Price cannot be negative"],
 		},
 
-		salePrice: {
+		originalPrice: {
 			type: Number,
-			min: [0, "Sale price cannot be negative"],
+			min: [0, "Original price cannot be negative"],
 		},
 
 		stock: {
@@ -108,43 +63,19 @@ const productSchema = new mongoose.Schema(
 			trim: true,
 		},
 
-		concern: {
-			type: String,
-			trim: true,
-		},
-
 		images: [productImageSchema],
 
-		badge: String,
-		priceLabel: String,
-		tagline: String,
-		quantity: String,
-		dosage: String,
-		ingredients: [ingredientSchema],
-		benefits: [String],
-		suitableFor: String,
-		certifications: [String],
-		relatedIds: [String],
-		pricingTiers: [pricingTierSchema],
-		keyBenefits: [keyBenefitSchema],
-		productDetails: [String],
-		usageLevels: [usageLevelSchema],
-		testimonials: [testimonialSchema],
-		faqs: [faqSchema],
-		claims: [String],
-		aboutParagraphs: [String],
-		benefitsIntro: String,
-		ingredientsIntro: String,
-		howItWorks: String,
-		testimonialsIntro: String,
-		commitmentParagraph: String,
-		prepaidOffer: String,
-		safetyNotice: String,
-
-		isFeatured: {
-			type: Boolean,
-			default: false,
+		size: String,
+		notes: {
+			top: [String],
+			heart: [String],
+			base: [String],
 		},
+		tags: [String],
+		bg: String,
+		accent: String,
+		textColor: String,
+		subColor: String,
 
 		status: {
 			type: String,

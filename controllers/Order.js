@@ -10,10 +10,109 @@ import { createOrderSchema } from "../config/zod.js";
 import razorpay from "../config/razorpay.js";
 import { triggerOrderNotificationAsync } from "../services/orderNotificationService.js";
 
+const normalizePinCode = (value = "") => String(value).replace(/\D/g, "");
+
+const normalizeOrderPayload = (body) => {
+	const rawAddress = body.shippingAddress || body.address || {};
+	const paymentMethod =
+		body.paymentMethod === "online" ? "razorpay" : body.paymentMethod || "cod";
+
+	return {
+		...body,
+		items: (body.items || []).map((item) => ({
+			...item,
+			product: item.product ? String(item.product) : undefined,
+			frontendId:
+				item.frontendId !== undefined || item.id !== undefined
+					? String(item.frontendId ?? item.id)
+					: undefined,
+			quantity: item.quantity || item.qty,
+		})),
+		shippingAddress: {
+			name: rawAddress.name,
+			phone: rawAddress.phone,
+			email: rawAddress.email,
+			addressLine1: rawAddress.addressLine1 || rawAddress.line1,
+			addressLine2: rawAddress.addressLine2 || rawAddress.line2,
+			city: rawAddress.city,
+			state: rawAddress.state,
+			pinCode: normalizePinCode(rawAddress.pinCode || rawAddress.pincode),
+			country: rawAddress.country || "India",
+		},
+		paymentMethod,
+	};
+};
+
+const findProductForOrderItem = async (item) => {
+	if (item.product && mongoose.Types.ObjectId.isValid(item.product)) {
+		return Product.findById(item.product);
+	}
+
+	if (item.frontendId) {
+		if (mongoose.Types.ObjectId.isValid(item.frontendId)) {
+			return Product.findById(item.frontendId);
+		}
+
+		return Product.findOne({
+			$or: [
+				{ slug: item.frontendId },
+				{ sku: item.frontendId.toUpperCase() },
+			],
+		});
+	}
+
+	return null;
+};
+
+const buildOrderItem = async (item, { decrementStock = false } = {}) => {
+	const product = await findProductForOrderItem(item);
+	const quantity = item.quantity;
+
+	if (product) {
+		if (product.stock < quantity) {
+			throw new Error(`${product.title} is out of stock`);
+		}
+
+		if (decrementStock) {
+			product.stock -= quantity;
+			await product.save();
+		}
+
+		return {
+			orderItem: {
+				product: product._id,
+				frontendId: item.frontendId,
+				title: product.title,
+				price: product.price,
+				quantity,
+				image: product.images?.[0]?.url || item.image || "",
+			},
+			lineTotal: product.price * quantity,
+		};
+	}
+
+	if (!item.name || typeof item.price !== "number") {
+		const error = new Error("Product not found");
+		error.statusCode = 404;
+		throw error;
+	}
+
+	return {
+		orderItem: {
+			frontendId: item.frontendId,
+			title: item.name,
+			price: item.price,
+			quantity,
+			image: item.image || "",
+		},
+		lineTotal: item.price * quantity,
+	};
+};
+
 export const createRazorpayCheckout = tryCatch(async (req, res) => {
 	const userId = req.userId;
 
-	const sanitizedBody = sanitize(req.body);
+	const sanitizedBody = normalizeOrderPayload(sanitize(req.body));
 
 	const validation = createOrderSchema.safeParse(sanitizedBody);
 
@@ -23,47 +122,27 @@ export const createRazorpayCheckout = tryCatch(async (req, res) => {
 		});
 	}
 
-	const { items, shippingAddress, contactPhone, contactEmail, customerName } =
-		validation.data;
+	const { items, shippingAddress } = validation.data;
 
 	const orderItems = [];
 
 	let subTotal = 0;
 
 	for (const item of items) {
-		const product = await Product.findById(item.product);
-
-		if (!product) {
-			return res.status(404).json({
-				message: "Product not found",
+		try {
+			const { orderItem, lineTotal } = await buildOrderItem(item);
+			subTotal += lineTotal;
+			orderItems.push(orderItem);
+		} catch (error) {
+			return res.status(error.statusCode || 400).json({
+				message: error.message,
 			});
 		}
-
-		if (product.stock < item.quantity) {
-			return res.status(400).json({
-				message: `${product.title} is out of stock`,
-			});
-		}
-
-		const itemTotal = product.price * item.quantity;
-
-		subTotal += itemTotal;
-
-		orderItems.push({
-			product: product._id,
-			title: product.title,
-			price: product.price,
-			quantity: item.quantity,
-			image: product.images?.[0]?.url || "",
-		});
 	}
 
-	// const shippingCharge = subTotal > 999 ? 0 : 99;
 	const shippingCharge = 0;
 
-	const taxAmount = Math.round(subTotal * 0.18);
-
-	const totalAmount = subTotal + taxAmount;
+	const totalAmount = subTotal + shippingCharge;
 
 	// Create razorpay order
 	const razorpayOrder = await razorpay.orders.create({
@@ -80,11 +159,11 @@ export const createRazorpayCheckout = tryCatch(async (req, res) => {
 
 		shippingAddress,
 
-		contactPhone,
+		contactPhone: shippingAddress?.phone,
 
-		contactEmail,
+		contactEmail: shippingAddress?.email,
 
-		customerName,
+		customerName: shippingAddress?.name,
 
 		paymentMethod: "razorpay",
 
@@ -116,7 +195,7 @@ export const createOrder = tryCatch(async (req, res) => {
 		});
 	}
 
-	const sanitizedBody = sanitize(req.body);
+	const sanitizedBody = normalizeOrderPayload(sanitize(req.body));
 
 	const validation = createOrderSchema.safeParse(sanitizedBody);
 
@@ -126,57 +205,29 @@ export const createOrder = tryCatch(async (req, res) => {
 		});
 	}
 
-	const {
-		items,
-		shippingAddress,
-		paymentMethod,
-		contactPhone,
-		contactEmail,
-		customerName,
-	} = validation.data;
+	const { items, shippingAddress, paymentMethod } = validation.data;
 
 	const orderItems = [];
 
 	let subTotal = 0;
 
 	for (const item of items) {
-		const product = await Product.findById(item.product);
-
-		if (!product) {
-			return res.status(404).json({
-				message: "Product not found",
+		try {
+			const { orderItem, lineTotal } = await buildOrderItem(item, {
+				decrementStock: true,
+			});
+			subTotal += lineTotal;
+			orderItems.push(orderItem);
+		} catch (error) {
+			return res.status(error.statusCode || 400).json({
+				message: error.message,
 			});
 		}
-
-		if (product.stock < item.quantity) {
-			return res.status(400).json({
-				message: `${product.title} is out of stock`,
-			});
-		}
-
-		const itemTotal = product.price * item.quantity;
-
-		subTotal += itemTotal;
-
-		orderItems.push({
-			product: product._id,
-			title: product.title,
-			price: product.price,
-			quantity: item.quantity,
-			image: product.images?.[0]?.url || "",
-		});
-
-		product.stock -= item.quantity;
-
-		await product.save();
 	}
 
-	// const shippingCharge = subTotal > 999 ? 0 : 99;
 	const shippingCharge = 0;
 
-	const taxAmount = Math.round(subTotal * 0.18);
-
-	const totalAmount = subTotal + taxAmount;
+	const totalAmount = subTotal + shippingCharge;
 
 	const order = await Order.create({
 		user: userId,
@@ -185,11 +236,11 @@ export const createOrder = tryCatch(async (req, res) => {
 
 		shippingAddress,
 
-		contactPhone,
+		contactPhone: shippingAddress?.phone,
 
-		contactEmail,
+		contactEmail: shippingAddress?.email,
 
-		customerName,
+		customerName: shippingAddress?.name,
 
 		paymentMethod,
 
@@ -272,28 +323,60 @@ export const updateOrderStatus = tryCatch(async (req, res) => {
 		});
 	}
 
+	const previousStatus = order.orderStatus;
 	order.orderStatus = orderStatus;
-
-	if (orderStatus === "shipped" && !order.shippedAt) {
-		order.shippedAt = new Date();
-	}
 
 	if (orderStatus === "delivered") {
 		order.deliveredAt = new Date();
 	}
 
+	if (orderStatus === "shipped") {
+		order.shippedAt = new Date();
+	}
+
+	// Refund stock if order gets cancelled by admin
+	if (orderStatus === "cancelled" && previousStatus !== "cancelled") {
+		for (const item of order.items) {
+			if (item.product) {
+				const product = await Product.findById(item.product);
+				if (product) {
+					product.stock += item.quantity;
+					await product.save();
+				}
+			}
+		}
+	}
+
+	// Re-deduct stock if order is restored from cancelled
+	if (previousStatus === "cancelled" && orderStatus !== "cancelled") {
+		for (const item of order.items) {
+			if (item.product) {
+				const product = await Product.findById(item.product);
+				if (product) {
+					if (product.stock < item.quantity) {
+						return res.status(400).json({
+							message: `Insufficient stock for product "${product.title}" to restore order. Available stock: ${product.stock}`,
+						});
+					}
+					product.stock -= item.quantity;
+					await product.save();
+				}
+			}
+		}
+	}
+
 	await order.save();
 
-	if (orderStatus === "shipped") {
-		triggerOrderNotificationAsync("order_shipped", order);
-	}
-
-	if (orderStatus === "delivered") {
-		triggerOrderNotificationAsync("order_delivered", order);
-	}
-
-	if (orderStatus === "cancelled") {
-		triggerOrderNotificationAsync("order_cancelled", order);
+	if (previousStatus !== orderStatus) {
+		const eventByStatus = {
+			confirmed: "order_confirmed",
+			shipped: "order_shipped",
+			delivered: "order_delivered",
+			cancelled: "order_cancelled",
+		};
+		if (eventByStatus[orderStatus]) {
+			triggerOrderNotificationAsync(eventByStatus[orderStatus], order);
+		}
 	}
 
 	res.status(200).json({
@@ -327,6 +410,10 @@ export const cancelOrder = tryCatch(async (req, res) => {
 	order.orderStatus = "cancelled";
 
 	for (const item of order.items) {
+		if (!item.product) {
+			continue;
+		}
+
 		const product = await Product.findById(item.product);
 
 		if (product) {
@@ -357,6 +444,7 @@ export const payOrder = tryCatch(async (req, res) => {
 		});
 	}
 
+	const wasConfirmed = order.orderStatus === "confirmed";
 	order.paymentStatus = "paid";
 	order.isPaid = true;
 	order.paidAt = new Date();
@@ -364,7 +452,9 @@ export const payOrder = tryCatch(async (req, res) => {
 
 	await order.save();
 
-	triggerOrderNotificationAsync("order_confirmed", order);
+	if (!wasConfirmed) {
+		triggerOrderNotificationAsync("order_confirmed", order);
+	}
 
 	res.status(200).json({
 		message: "Order paid successfully",
@@ -507,5 +597,21 @@ export const getOrderStats = tryCatch(async (req, res) => {
 			recentOrders,
 			salesTrend
 		}
+	});
+});
+
+export const deleteOrder = tryCatch(async (req, res) => {
+	const { id } = req.params;
+
+	const deletedOrder = await Order.findByIdAndDelete(id);
+
+	if (!deletedOrder) {
+		return res.status(404).json({
+			message: "Order not found",
+		});
+	}
+
+	res.status(200).json({
+		message: "Order deleted successfully",
 	});
 });

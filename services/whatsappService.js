@@ -1,4 +1,14 @@
+
 const WHATSAPP_API_VERSION = process.env.WHATSAPP_API_VERSION || "v21.0";
+
+const normalizePhoneNumber = (value) => {
+	const digits = String(value || "").replace(/\D/g, "");
+	if (!digits) return "";
+	if (digits.length === 10) {
+		return `${process.env.WHATSAPP_DEFAULT_COUNTRY_CODE || "91"}${digits}`;
+	}
+	return digits;
+};
 
 export const hasWhatsAppCredentials = () =>
 	Boolean(
@@ -15,6 +25,11 @@ export const sendTemplateMessage = async ({
 		throw new Error("WhatsApp credentials are missing");
 	}
 
+	const normalizedRecipient = normalizePhoneNumber(to);
+	if (!normalizedRecipient) {
+		throw new Error("A valid WhatsApp recipient number is required");
+	}
+
 	const response = await fetch(
 		`https://graph.facebook.com/${WHATSAPP_API_VERSION}/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`,
 		{
@@ -25,7 +40,7 @@ export const sendTemplateMessage = async ({
 			},
 			body: JSON.stringify({
 				messaging_product: "whatsapp",
-				to,
+				to: normalizedRecipient,
 				type: "template",
 				template: {
 					name: templateName,

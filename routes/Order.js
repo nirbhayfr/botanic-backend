@@ -10,6 +10,7 @@ import {
 	createRazorpayCheckout,
 	getAllOrders,
 	getOrderStats,
+	deleteOrder,
 } from "../controllers/Order.js";
 import { authMiddleware, adminMiddleware } from "../middlewares/authController.js";
 
@@ -18,6 +19,7 @@ const router = express.Router();
 // Admin-specific endpoints
 router.get("/", authMiddleware, adminMiddleware, getAllOrders);
 router.get("/stats", authMiddleware, adminMiddleware, getOrderStats);
+router.delete("/:id", authMiddleware, adminMiddleware, deleteOrder);
 
 // User endpoints
 router.post("/", authMiddleware, createOrder);
@@ -33,3 +35,4 @@ router.put("/:id/pay", authMiddleware, adminMiddleware, payOrder);
 router.put("/:id/cancel", authMiddleware, cancelOrder);
 
 export default router;
+

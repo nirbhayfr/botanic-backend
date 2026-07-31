@@ -1,3 +1,4 @@
+
 import mongoose from "mongoose";
 
 const eventSettingsSchema = new mongoose.Schema(
@@ -86,3 +87,4 @@ const AutomationSettings = mongoose.model(
 );
 
 export default AutomationSettings;
+

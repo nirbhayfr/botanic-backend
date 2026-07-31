@@ -65,6 +65,10 @@ export const verifyPayment = async (req, res) => {
 
 		// reduce stock after successful payment
 		for (const item of order.items) {
+			if (!item.product) {
+				continue;
+			}
+
 			const product = await Product.findById(item.product);
 
 			if (product) {

@@ -5,7 +5,10 @@ const orderItemSchema = new mongoose.Schema(
 		product: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "Product",
-			required: true,
+		},
+
+		frontendId: {
+			type: String,
 		},
 
 		title: {
@@ -32,6 +35,9 @@ const orderItemSchema = new mongoose.Schema(
 
 const shippingAddressSchema = new mongoose.Schema(
 	{
+		name: String,
+		phone: String,
+		email: String,
 		addressLine1: String,
 		addressLine2: String,
 		city: String,
@@ -87,12 +93,7 @@ const orderSchema = new mongoose.Schema(
 
 		shippingAddress: shippingAddressSchema,
 
-		contactPhone: {
-			type: String,
-			required() {
-				return this.isNew;
-			},
-		},
+		contactPhone: String,
 
 		contactEmail: String,
 
@@ -100,7 +101,7 @@ const orderSchema = new mongoose.Schema(
 
 		paymentMethod: {
 			type: String,
-			enum: ["cod", "razorpay", "stripe"],
+			enum: ["cod", "razorpay"],
 			default: "cod",
 		},
 
@@ -151,9 +152,9 @@ const orderSchema = new mongoose.Schema(
 
 		paidAt: Date,
 
-		shippedAt: Date,
-
 		deliveredAt: Date,
+
+		shippedAt: Date,
 
 		notifications: [notificationSchema],
 	},

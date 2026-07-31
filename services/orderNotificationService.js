@@ -1,17 +1,21 @@
+
 import Order from "../models/Order.js";
 import AutomationSettings from "../models/AutomationSettings.js";
 import { hasWhatsAppCredentials, sendTemplateMessage } from "./whatsappService.js";
 
-const STORE_NAME = "Be Botanic";
+const STORE_NAME = process.env.STORE_NAME || "Veadya";
 
 const getOrderId = (order) => `#${String(order._id).slice(-8).toUpperCase()}`;
 
 const getStatusLink = (order) => {
-	const baseUrl = process.env.STOREFRONT_URL || "http://localhost:3000";
+	const baseUrl =
+		process.env.STOREFRONT_URL ||
+		process.env.SITE_URL ||
+		"http://localhost:5173";
 	return `${baseUrl.replace(/\/$/, "")}/orders/${order._id}`;
 };
 
-const buildParameters = (event, order) => {
+const buildParameters = (event, order, configuredVariables = []) => {
 	const amount = `Rs ${order.totalAmount || 0}`;
 	const values = {
 		orderId: getOrderId(order),
@@ -28,7 +32,10 @@ const buildParameters = (event, order) => {
 		order_cancelled: ["orderId"],
 	};
 
-	return (map[event] || ["orderId"]).map((key) => values[key]);
+	const variableKeys = configuredVariables.length
+		? configuredVariables
+		: map[event] || ["orderId"];
+	return variableKeys.map((key) => values[key] ?? "");
 };
 
 const appendLog = async (orderId, notification) => {
@@ -78,7 +85,7 @@ export const triggerOrderNotification = async (event, order) => {
 		const messageId = await sendTemplateMessage({
 			to: order.contactPhone,
 			templateName: eventSettings.templateName || event,
-			parameters: buildParameters(event, order),
+			parameters: buildParameters(event, order, eventSettings.variables),
 		});
 
 		await appendLog(order._id, {

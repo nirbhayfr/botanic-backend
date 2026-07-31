@@ -63,7 +63,14 @@ export const createCategory = tryCatch(async (req, res) => {
 });
 
 export const getCategories = tryCatch(async (req, res) => {
-	const categories = await Category.find()
+	const { status } = req.query;
+	const query = {};
+
+	if (status) {
+		query.status = status;
+	}
+
+	const categories = await Category.find(query)
 		.populate("parentCategory")
 		.sort({ createdAt: -1 });
 

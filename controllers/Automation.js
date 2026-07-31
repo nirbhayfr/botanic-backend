@@ -1,3 +1,4 @@
+
 import sanitize from "mongo-sanitize";
 
 import AutomationSettings, {
@@ -85,3 +86,4 @@ export const getNotificationLogs = tryCatch(async (req, res) => {
 		data: logs,
 	});
 });
+

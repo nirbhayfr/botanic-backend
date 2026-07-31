@@ -1,3 +1,4 @@
+
 import express from "express";
 
 import {
@@ -14,3 +15,4 @@ router.put("/settings", authMiddleware, adminMiddleware, updateAutomationSetting
 router.get("/logs", authMiddleware, adminMiddleware, getNotificationLogs);
 
 export default router;
+

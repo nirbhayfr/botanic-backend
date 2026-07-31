@@ -1,35 +1,35 @@
 import mongoose from "mongoose";
 
-const consultationSchema = new mongoose.Schema(
+const contactSchema = new mongoose.Schema(
 	{
 		name: {
 			type: String,
 			required: [true, "Name is required"],
 			trim: true,
 		},
+
 		email: {
 			type: String,
 			required: [true, "Email is required"],
 			trim: true,
 			lowercase: true,
 		},
-		goal: {
+
+		subject: {
 			type: String,
-			required: [true, "Primary wellness goal is required"],
+			required: [true, "Subject is required"],
 			trim: true,
 		},
-		notes: {
+
+		message: {
 			type: String,
+			required: [true, "Message is required"],
 			trim: true,
-		},
-		user: {
-			type: mongoose.Schema.Types.ObjectId,
-			ref: "User",
 		},
 	},
 	{ timestamps: true },
 );
 
-const Consultation = mongoose.model("Consultation", consultationSchema);
+const Contact = mongoose.model("Contact", contactSchema);
 
-export default Consultation;
+export default Contact;

@@ -38,12 +38,14 @@ export const registerUser = tryCatch(async (req, res) => {
 	}
 
 	const {
+		name,
 		firstName,
 		lastName,
 		phone,
 		email,
 		password,
 		confirmPassword,
+		role,
 	} = validation.data;
 
 	const checkPassword = confirmPassword === password;
@@ -62,14 +64,24 @@ export const registerUser = tryCatch(async (req, res) => {
 	}
 
 	const hashedPassword = await bcrypt.hash(password, 10);
+	const fallbackNameParts = name?.trim().split(/\s+/) || [];
+	const resolvedFirstName = firstName || fallbackNameParts[0];
+	const resolvedLastName =
+		lastName || fallbackNameParts.slice(1).join(" ") || undefined;
 
-	const newUser = await User.create({
+	const userData = {
 		email,
-		firstName,
-		lastName,
-		phone,
+		firstName: resolvedFirstName,
+		lastName: resolvedLastName,
 		password: hashedPassword,
-	});
+		role,
+	};
+
+	if (phone) {
+		userData.phone = phone;
+	}
+
+	const newUser = await User.create(userData);
 
 	res.status(201).json({
 		message: "User has been created succesfully",
@@ -120,7 +132,7 @@ export const loginUser = tryCatch(async (req, res) => {
 
 	const comparePassword = await bcrypt.compare(password, user.password);
 	if (!comparePassword) {
-		res.status(400).json({
+		return res.status(400).json({
 			messsage: "Invalid Credentials",
 		});
 	}
@@ -138,6 +150,32 @@ export const loginUser = tryCatch(async (req, res) => {
 			phone: user.phone,
 			shippingAddress: user.shippingAddress,
 			role: user.role,
+		},
+	});
+});
+
+export const getAddress = tryCatch(async (req, res) => {
+	const userId = req?.userId;
+
+	if (!userId) {
+		return res.status(401).json({
+			message: "Unauthorized",
+		});
+	}
+
+	const user = await User.findById(userId).select("shippingAddress phone");
+
+	if (!user) {
+		return res.status(404).json({
+			message: "User not found",
+		});
+	}
+
+	res.status(200).json({
+		message: "Address fetched successfully",
+		data: {
+			shippingAddress: user.shippingAddress || null,
+			phone: user.phone || null,
 		},
 	});
 });
@@ -169,11 +207,27 @@ export const setAddress = tryCatch(async (req, res) => {
 		});
 	}
 
-	const addressData = validation.data;
+	const addressData = {
+		addressLine1: validation.data.addressLine1 || validation.data.line1,
+		addressLine2: validation.data.addressLine2 || validation.data.line2,
+		city: validation.data.city,
+		state: validation.data.state,
+		pinCode: (validation.data.pinCode || validation.data.pincode || "").replace(
+			/\D/g,
+			"",
+		),
+		country: validation.data.country || "India",
+	};
+
+	const updatePayload = { shippingAddress: addressData };
+
+	if (validation.data.phone) {
+		updatePayload.phone = validation.data.phone.replace(/\D/g, "");
+	}
 
 	const updatedUser = await User.findByIdAndUpdate(
 		userId,
-		{ shippingAddress: addressData },
+		updatePayload,
 		{ new: true, runValidators: true },
 	);
 
@@ -185,6 +239,89 @@ export const setAddress = tryCatch(async (req, res) => {
 
 	res.status(200).json({
 		message: "Address updated successfully",
-		data: updatedUser.shippingAddress,
+		data: {
+			shippingAddress: updatedUser.shippingAddress,
+			phone: updatedUser.phone || null,
+		},
 	});
 });
+
+export const getAllUsers = tryCatch(async (req, res) => {
+	const users = await User.find().sort({ createdAt: -1 });
+
+	res.status(200).json({
+		message: "Users fetched successfully",
+		count: users.length,
+		data: users,
+	});
+});
+
+export const updateUser = tryCatch(async (req, res) => {
+	const { id } = req.params;
+	const sanitizedBody = sanitize(req.body);
+
+	const updatedUser = await User.findByIdAndUpdate(
+		id,
+		sanitizedBody,
+		{ new: true, runValidators: true }
+	);
+
+	if (!updatedUser) {
+		return res.status(404).json({
+			message: "User not found",
+		});
+	}
+
+	res.status(200).json({
+		message: "User updated successfully",
+		data: updatedUser,
+	});
+});
+
+export const deleteUser = tryCatch(async (req, res) => {
+	const { id } = req.params;
+
+	const deletedUser = await User.findByIdAndDelete(id);
+
+	if (!deletedUser) {
+		return res.status(404).json({
+			message: "User not found",
+		});
+	}
+
+	res.status(200).json({
+		message: "User deleted successfully",
+	});
+});
+
+export const getMe = tryCatch(async (req, res) => {
+	const userId = req.userId;
+
+	if (!userId) {
+		return res.status(401).json({
+			message: "Unauthorized",
+		});
+	}
+
+	const user = await User.findById(userId);
+
+	if (!user) {
+		return res.status(404).json({
+			message: "User not found",
+		});
+	}
+
+	res.status(200).json({
+		message: "Profile fetched successfully",
+		data: {
+			_id: user._id,
+			firstName: user.firstName,
+			lastName: user.lastName,
+			email: user.email,
+			phone: user.phone,
+			shippingAddress: user.shippingAddress,
+			role: user.role,
+		},
+	});
+});
+

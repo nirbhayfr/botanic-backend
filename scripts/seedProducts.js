@@ -6,187 +6,284 @@ import mongoose from "mongoose";
 import { connectDB } from "../config/db.js";
 import Product from "../models/Product.js";
 import Category from "../models/Category.js";
-import { products } from "./productSeedData.js";
+
+const categories = [
+	{
+		name: "Capsule",
+		description: "Ayurvedic capsules formulated with pure herb extracts.",
+		isFeatured: true,
+	},
+	{
+		name: "Juice",
+		description: "Fresh botanical juices crafted for daily wellness.",
+		isFeatured: true,
+	},
+	{
+		name: "Drop",
+		description: "Concentrated herbal drops for instant healing.",
+		isFeatured: true,
+	},
+];
+
+const products = [
+	{
+		id: 1,
+		name: "Sernex+",
+		category: "Capsule",
+		price: 499,
+		originalPrice: 649,
+		size: "60 Capsules",
+		description:
+			"Supports stamina, vitality, strength, and daily performance naturally.",
+		notes: {
+			top: ["Ashwagandha", "Safed Musli"],
+			heart: ["Shilajit", "Gokshura"],
+			base: ["Kaunch Beej", "Saffron"],
+		},
+		tags: ["Capsule", "Men Wellness", "Stamina"],
+		rating: 4.8,
+		reviews: 154,
+		bg: "#fcfbfa",
+		accent: "#114232",
+		textColor: "#111111",
+		subColor: "#666666",
+		images: ["/assets/img/p-1.jpeg"],
+	},
+	{
+		id: 2,
+		name: "Bowlease+",
+		category: "Capsule",
+		price: 549,
+		originalPrice: 699,
+		size: "60 Capsules",
+		description:
+			"Helps improve bowel movement and supports complete digestive comfort.",
+		notes: {
+			top: ["Senna Leaf", "Triphala"],
+			heart: ["Haritaki", "Ajwain"],
+			base: ["Fennel Seeds", "Castor Oil Extract"],
+		},
+		tags: ["Capsule", "Digestive Wellness", "Bowel Movement"],
+		rating: 4.7,
+		reviews: 112,
+		bg: "#fcfbfa",
+		accent: "#114232",
+		textColor: "#111111",
+		subColor: "#666666",
+		images: ["/assets/img/p-2.jpeg"],
+	},
+	{
+		id: 3,
+		name: "Calmiva+",
+		category: "Drop",
+		price: 599,
+		originalPrice: 799,
+		size: "60 Capsules",
+		description:
+			"Promotes relaxation, better sleep quality, and emotional balance.",
+		notes: {
+			top: ["Brahmi", "Tagar Root"],
+			heart: ["Jatamansi", "Ashwagandha"],
+			base: ["Shankhpushpi", "Chamomile"],
+		},
+		tags: ["Capsule", "Stress Relief", "Sleep"],
+		rating: 4.9,
+		reviews: 204,
+		bg: "#fcfbfa",
+		accent: "#114232",
+		textColor: "#111111",
+		subColor: "#666666",
+		images: ["/assets/img/p-3.jpeg"],
+	},
+	{
+		id: 4,
+		name: "Livo De+ Juice",
+		category: "Juice",
+		price: 689,
+		originalPrice: 899,
+		size: "1000ml",
+		description:
+			"Supports liver detoxification and improves overall metabolic health.",
+		notes: {
+			top: ["Bhumi Amla", "Punarnava"],
+			heart: ["Kalmegh", "Kutki"],
+			base: ["Aloe Vera", "Giloy"],
+		},
+		tags: ["Juice", "Liver Wellness", "Detox"],
+		rating: 4.6,
+		reviews: 98,
+		bg: "#fcfbfa",
+		accent: "#114232",
+		textColor: "#111111",
+		subColor: "#666666",
+		images: ["/assets/img/p-4.jpeg"],
+	},
+	{
+		id: 5,
+		name: "IBGS+ Juice",
+		category: "Juice",
+		price: 729,
+		originalPrice: 949,
+		size: "1000ml",
+		description:
+			"Enhances digestion, gut balance, and nutrient absorption naturally.",
+		notes: {
+			top: ["Bel Fruit", "Kutaj Bark"],
+			heart: ["Ginger", "Fennel"],
+			base: ["Coriander", "Mint"],
+		},
+		tags: ["Juice", "Gut Wellness", "Digestion"],
+		rating: 4.8,
+		reviews: 145,
+		bg: "#fcfbfa",
+		accent: "#114232",
+		textColor: "#111111",
+		subColor: "#666666",
+		images: ["/assets/img/p-5.jpeg"],
+	},
+	{
+		id: 6,
+		name: "Cardiva HRT+",
+		category: "Capsule",
+		price: 649,
+		originalPrice: 849,
+		size: "60 Capsules",
+		description:
+			"Supports healthy circulation and strengthens cardiovascular function.",
+		notes: {
+			top: ["Arjuna Bark", "Garlic Extract"],
+			heart: ["Guggul", "Pushkarmool"],
+			base: ["Grape Seed Extract", "Coenzyme Q10"],
+		},
+		tags: ["Capsule", "Heart Wellness", "Circulation"],
+		rating: 4.7,
+		reviews: 86,
+		bg: "#fcfbfa",
+		accent: "#114232",
+		textColor: "#111111",
+		subColor: "#666666",
+		images: ["/assets/img/p-6.jpeg"],
+	},
+	{
+		id: 7,
+		name: "Gluvora DB+",
+		category: "Juice",
+		price: 799,
+		originalPrice: 1099,
+		size: "1000ml",
+		description:
+			"Helps maintain healthy sugar levels and supports metabolic wellness.",
+		notes: {
+			top: ["Karela (Bitter Gourd)", "Jamun (Java Plum)"],
+			heart: ["Gurmar (Gymnema)", "Methi (Fenugreek)"],
+			base: ["Amla", "Vijayasar Wood"],
+		},
+		tags: ["Juice", "Diabetic Care", "Sugar Control"],
+		rating: 4.9,
+		reviews: 167,
+		bg: "#fcfbfa",
+		accent: "#114232",
+		textColor: "#111111",
+		subColor: "#666666",
+		images: ["/assets/img/p-1.jpeg"],
+	},
+	{
+		id: 8,
+		name: "Herlina +",
+		category: "Capsule",
+		price: 299,
+		originalPrice: 399,
+		size: "60 capsules",
+		description:
+			"Helps improve health and supports complete immunity growth.",
+		notes: {
+			top: ["Rama Tulsi", "Shyama Tulsi"],
+			heart: ["Van Tulsi", "Arjak Tulsi"],
+			base: ["Ginger Oil", "Menthol Spark"],
+		},
+		tags: ["Drop", "Immunity", "Vitality"],
+		rating: 4.5,
+		reviews: 42,
+		bg: "#fcfbfa",
+		accent: "#114232",
+		textColor: "#111111",
+		subColor: "#666666",
+		images: ["/assets/img/p-2.jpeg"],
+	},
+];
 
 const toSlug = (value) =>
-	value
+	String(value)
 		.toLowerCase()
 		.replace(/[^a-z0-9]+/g, "-")
 		.replace(/(^-|-$)/g, "");
 
-const categoryDefs = [
-	{
-		name: "Capsules",
-		slug: "capsules",
-		description: "Premium herbal capsules with standardized extracts for targeted daily wellness.",
-		image: "/assets/img/pe-5.png",
-		isFeatured: true,
-		status: "active",
-	},
-	{
-		name: "Juices",
-		slug: "juices",
-		description: "Cold-processed botanical juices derived from classical Ayurvedic herbs.",
-		image: "/assets/img/slider-1.png",
-		isFeatured: true,
-		status: "active",
-	},
-];
+export const seed = async () => {
+	await connectDB();
 
-const fallbackImages = [
-	"/assets/img/p-1.jpeg",
-	"/assets/img/p-2.jpeg",
-	"/assets/img/p-3.jpeg",
-	"/assets/img/p-4.jpeg",
-	"/assets/img/p-5.jpeg",
-	"/assets/img/p-6.jpeg",
-];
+	console.log("Cleaning database products and categories...");
+	await Product.deleteMany({});
+	await Category.deleteMany({});
 
-const fillMissingDetailData = async () => {
-	const allProducts = await Product.find({}).sort({ createdAt: 1 });
-	const allSlugs = allProducts.map((product) => product.slug);
-
-	for (const [index, product] of allProducts.entries()) {
-		const image = product.images?.[0]?.url || fallbackImages[index % fallbackImages.length];
-		const basePrice = Number(product.salePrice || product.price || 499);
-		const originalPrice = Number(product.price || basePrice);
-		const concern = product.concern || "Everyday Wellness";
-
-		if (!product.images?.length) product.images = [{ url: image }];
-		if (!product.longDescription) product.longDescription = `${product.title} is a thoughtfully prepared Ayurvedic wellness product designed to support ${concern.toLowerCase()} as part of a consistent daily routine.`;
-		if (!product.tagline) product.tagline = `Simple daily support for ${concern.toLowerCase()}`;
-		if (!product.quantity) product.quantity = "60 Servings";
-		if (!product.dosage) product.dosage = "Take one serving once or twice daily after meals with water.";
-		if (!product.suitableFor) product.suitableFor = "Adults";
-		if (!product.certifications?.length) product.certifications = ["GMP Certified", "Lab Tested", "Made in India"];
-		if (!product.benefits?.length) product.benefits = ["Supports everyday wellness", `Helps maintain ${concern.toLowerCase()}`, "Easy to include in a daily routine"];
-
-		product.ingredients = product.ingredients?.length
-			? product.ingredients.map((ingredient) => ({
-				name: ingredient.name || "Ayurvedic Botanical Blend",
-				amount: ingredient.amount || "Standardized serving",
-				benefit: ingredient.benefit || `Traditionally used for ${concern.toLowerCase()}`,
-				image: ingredient.image || image,
-			}))
-			: [{ name: "Ayurvedic Botanical Blend", amount: "Standardized serving", benefit: `Traditionally used for ${concern.toLowerCase()}`, image }];
-
-		if (!product.pricingTiers?.length) product.pricingTiers = [
-			{ bottles: 1, duration: "1 Month", price: basePrice },
-			{ bottles: 2, duration: "2 Months", price: Math.round(basePrice * 1.8), originalPrice: Math.round(originalPrice * 2), badge: "Best Value" },
-			{ bottles: 3, duration: "3 Months", price: Math.round(basePrice * 2.55), originalPrice: Math.round(originalPrice * 3) },
-		];
-		if (!product.keyBenefits?.length) product.keyBenefits = product.benefits.slice(0, 3).map((benefit) => ({ title: benefit, description: `Formulated to support ${concern.toLowerCase()} with consistent use.` }));
-		if (!product.productDetails?.length) product.productDetails = [product.quantity, "Quality-tested ingredients", "Made in a GMP-certified facility", "Designed for daily use"];
-		if (!product.usageLevels?.length) product.usageLevels = [{ label: "Daily Support", tablets: 1, frequency: product.dosage }];
-		if (!product.aboutParagraphs?.length) product.aboutParagraphs = [
-			`${product.title} combines Ayurvedic tradition with a convenient modern format.`,
-			`The formula is prepared in quality-controlled batches to support ${concern.toLowerCase()} and consistent everyday use.`,
-		];
-		if (!product.benefitsIntro) product.benefitsIntro = `Each component is selected to complement the formula's focus on ${concern.toLowerCase()}.`;
-		if (!product.ingredientsIntro) product.ingredientsIntro = "A focused selection of Ayurvedic botanicals chosen for quality, compatibility, and traditional use.";
-		if (!product.howItWorks) product.howItWorks = `With regular use, ${product.title} supports the body's natural wellness processes and helps maintain a balanced routine.`;
-		if (!product.testimonialsIntro) product.testimonialsIntro = `Customers share how ${product.title} fits into their everyday wellness routine.`;
-		if (!product.testimonials?.length) product.testimonials = [{ name: "Verified Customer", role: "Product user", quote: "The product is easy to use and has fitted naturally into my daily routine.", image }];
-		if (!product.faqs?.length) product.faqs = [
-			{ question: "How should I use this product?", answer: product.dosage },
-			{ question: "How long until I see results?", answer: "Individual results vary. Use consistently for 3–4 weeks before assessing how it fits your routine." },
-			{ question: "How should I store it?", answer: "Store in a cool, dry place away from direct sunlight and keep the pack tightly closed." },
-			{ question: "Is Cash on Delivery available?", answer: "Yes, Cash on Delivery is available for eligible Indian pin codes." },
-		];
-		if (!product.claims?.length) product.claims = ["Pure Ayurvedic Extracts", "Non-Habit Forming", "No Added Sugar", "Quality Tested"];
-		if (!product.commitmentParagraph) product.commitmentParagraph = "Every batch is checked for identity, purity, and consistency. We use carefully sourced ingredients and transparent labels for dependable daily wellness.";
-		if (!product.prepaidOffer) product.prepaidOffer = "Get an extra 10% off on prepaid orders";
-		if (!product.safetyNotice) product.safetyNotice = "Consult your physician before use if you are pregnant, nursing, have a medical condition, or take prescription medication. Keep out of reach of children.";
-		if (!product.relatedIds?.length) product.relatedIds = allSlugs.filter((slug) => slug !== product.slug).slice(0, 3);
-
-		await product.save();
-	}
-
-	return allProducts.length;
-};
-
-const seed = async () => {
-	await connectDB({ serverSelectionTimeoutMS: 15000 });
-
-	console.log("Seeding categories...");
+	console.log("Seeding Veadya categories...");
 	const categoryMap = {};
-	for (const cat of categoryDefs) {
-		const doc = await Category.findOneAndUpdate(
-			{ slug: cat.slug },
-			{ $set: cat },
-			{ upsert: true, new: true },
-		);
-		categoryMap[cat.name] = doc._id;
-		console.log(`Category seeded: ${cat.name} (${doc._id})`);
+	for (const cat of categories) {
+		const slug = toSlug(cat.name);
+		const seededCategory = await Category.create({
+			name: cat.name,
+			slug,
+			description: cat.description,
+			isFeatured: cat.isFeatured,
+			status: "active",
+		});
+		categoryMap[cat.name] = seededCategory._id;
+		console.log(`Category seeded: ${cat.name}`);
 	}
 
-	console.log("Seeding products...");
-	const operations = products.map((product) => {
-		const catId = categoryMap[product.category];
-		return {
-			updateOne: {
-				filter: { slug: product.id || toSlug(product.title) },
-				update: {
-					$set: {
-						title: product.title,
-						slug: product.id || toSlug(product.title),
-						description: product.description,
-						longDescription: product.longDescription,
-						price: product.price,
-						stock: 100,
-						sku: (product.id || toSlug(product.title)).toUpperCase(),
-						category: catId,
-						categoryName: product.category,
-						concern: product.concern,
-						images: product.images || [],
-						badge: product.badge,
-						priceLabel: product.priceLabel,
-						tagline: product.tagline,
-						quantity: product.quantity,
-						dosage: product.dosage,
-						ingredients: product.ingredients || [],
-						benefits: product.benefits || [],
-						suitableFor: product.suitableFor,
-						certifications: product.certifications || [],
-						relatedIds: product.relatedIds || [],
-						pricingTiers: product.pricingTiers || [],
-						keyBenefits: product.keyBenefits || [],
-						productDetails: product.productDetails || [],
-						usageLevels: product.usageLevels || [],
-						testimonials: product.testimonials || [],
-						faqs: product.faqs || [],
-						claims: product.claims || [],
-						aboutParagraphs: product.aboutParagraphs || [],
-						benefitsIntro: product.benefitsIntro,
-						ingredientsIntro: product.ingredientsIntro,
-						howItWorks: product.howItWorks,
-						testimonialsIntro: product.testimonialsIntro,
-						commitmentParagraph: product.commitmentParagraph,
-						prepaidOffer: product.prepaidOffer,
-						safetyNotice: product.safetyNotice,
-						isFeatured: true,
-						status: "active",
-					},
-				},
-				upsert: true,
-			},
-		};
-	});
+	console.log("Seeding Veadya products...");
+	for (const product of products) {
+		const slug = toSlug(product.name);
+		const images = product.images.map((img) => ({ url: img }));
 
-	const result = await Product.bulkWrite(operations);
+		await Product.create({
+			title: product.name,
+			slug,
+			description: product.description,
+			price: product.price,
+			originalPrice: product.originalPrice,
+			stock: 100,
+			sku: `VEADYA-${product.id}`,
+			category: categoryMap[product.category],
+			categoryName: product.category,
+			images,
+			size: product.size,
+			notes: product.notes,
+			tags: product.tags,
+			bg: product.bg,
+			accent: product.accent,
+			textColor: product.textColor,
+			subColor: product.subColor,
+			ratingAverage: product.rating,
+			ratingCount: product.reviews,
+			status: "active",
+		});
+		console.log(`Product seeded: ${product.name}`);
+	}
 
-	console.log(
-		`Seeded products: ${result.upsertedCount} inserted, ${result.modifiedCount} updated`,
-	);
-
-	const backfilledCount = await fillMissingDetailData();
-	console.log(`Detail-page data checked/backfilled for ${backfilledCount} products.`);
-
+	console.log("Seeding completed successfully!");
 	await mongoose.disconnect();
 };
 
-seed().catch(async (error) => {
-	console.error(error);
-	await mongoose.disconnect();
-	process.exit(1);
-});
+// Check if run directly from command line
+if (
+	import.meta.url === `file://${process.argv[1]}`.replace(/\\/g, "/") ||
+	(process.argv[1] && process.argv[1].endsWith("seedProducts.js"))
+) {
+	seed().catch(async (error) => {
+		console.error(error);
+		try {
+			await mongoose.disconnect();
+		} catch (e) {}
+		process.exit(1);
+	});
+}

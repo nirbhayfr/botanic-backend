@@ -11,10 +11,22 @@ import productRouter from "./routes/Product.js";
 import categoryRouter from "./routes/Category.js";
 import orderRouter from "./routes/Order.js";
 import reviewRouter from "./routes/Review.js";
+import contactRouter from "./routes/Contact.js";
 import paymentRouter from "./routes/Razorpay.js";
-import consultationRouter from "./routes/Consultation.js";
+import pageRouter from "./routes/Page.js";
+import postRouter from "./routes/Post.js";
+import postCategoryRouter from "./routes/PostCategory.js";
+import menuRouter from "./routes/Menu.js";
+import contentTypeRouter from "./routes/ContentType.js";
+import contentEntryRouter from "./routes/ContentEntry.js";
+import settingsRouter from "./routes/Settings.js";
+import newsletterRouter from "./routes/Newsletter.js";
+import couponRouter from "./routes/Coupon.js";
+import bannerRouter from "./routes/Banner.js";
+import notificationRouter from "./routes/Notification.js";
+import seoRouter from "./routes/Seo.js";
+import seedRouter from "./routes/Seed.js";
 import automationRouter from "./routes/Automation.js";
-import heroSlideRouter from "./routes/HeroSlide.js";
 
 connectDB();
 
@@ -25,9 +37,8 @@ app.use(
 		origin: [
 			"http://localhost:3000",
 			"http://localhost:5173",
-			"https://be-botanic.vercel.app",
-			"https://www.bebotanic.com",
-			"https://drops-nk7ruc7h0-nirbhays-projects-41ffadb8.vercel.app",
+			"https://veadya-eight.vercel.app",
+			"https://www.veadyalifesciences.com",
 		],
 		credentials: true,
 	}),
@@ -38,10 +49,22 @@ app.use("/api/v1/product", productRouter);
 app.use("/api/v1/category", categoryRouter);
 app.use("/api/v1/order", orderRouter);
 app.use("/api/v1/review", reviewRouter);
+app.use("/api/v1/contact", contactRouter);
 app.use("/api/v1/payment", paymentRouter);
-app.use("/api/v1/consultation", consultationRouter);
+app.use("/api/v1/page", pageRouter);
+app.use("/api/v1/post", postRouter);
+app.use("/api/v1/post-category", postCategoryRouter);
+app.use("/api/v1/menu", menuRouter);
+app.use("/api/v1/content-type", contentTypeRouter);
+app.use("/api/v1/content", contentEntryRouter);
+app.use("/api/v1/settings", settingsRouter);
+app.use("/api/v1/newsletter", newsletterRouter);
+app.use("/api/v1/coupon", couponRouter);
+app.use("/api/v1/banner", bannerRouter);
+app.use("/api/v1/notification", notificationRouter);
+app.use("/api/v1/seo", seoRouter);
+app.use("/api/v1/seed", seedRouter);
 app.use("/api/v1/automation", automationRouter);
-app.use("/api/v1/hero-slides", heroSlideRouter);
 
 app.use((req, res) => {
 	res.status(404).json({ error: "Route not found" });
