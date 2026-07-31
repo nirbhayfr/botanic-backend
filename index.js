@@ -37,8 +37,7 @@ app.use(
 		origin: [
 			"http://localhost:3000",
 			"http://localhost:5173",
-			"https://veadya-eight.vercel.app",
-			"https://www.veadyalifesciences.com",
+			"https://www.bebotanic.com"
 		],
 		credentials: true,
 	}),
